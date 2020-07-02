@@ -67,10 +67,11 @@ class SignalPropagation(NetworkPropagation):
                             W,
                             xi,
                             b,
+                            pi,
                             a=0.5,
                             lim_iter=1000,
                             tol=1e-5,
-                            get_trj=False):
+                            get_trj=True):
 
 
         n = W.shape[0]
@@ -79,6 +80,7 @@ class SignalPropagation(NetworkPropagation):
         #x0 = np.zeros((n,), dtype=np.float)
         #x0[:] = xi
         x0 = np.array(xi, dtype=np.float64)
+##        print(x0)
 
         x_t1 = x0.copy()
 
@@ -92,6 +94,9 @@ class SignalPropagation(NetworkPropagation):
         for i in range(lim_iter):
             # Main formula
             x_t2 = a*W.dot(x_t1) + (1-a)*b
+            for j in pi:
+                x_t2[j] = x0[j]
+            
             num_iter += 1
             # Check termination condition
             if np.linalg.norm(x_t2 - x_t1) <= tol:
@@ -103,11 +108,13 @@ class SignalPropagation(NetworkPropagation):
 
             # Update the state
             x_t1 = x_t2.copy()
+##            print("***")
         # end of for
 
         if get_trj is False:
             return x_t2, num_iter
         else:
+##            print(np.array(trj_x))
             return x_t2, np.array(trj_x)
 
     # end of def propagate_iterative

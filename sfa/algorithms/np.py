@@ -150,6 +150,7 @@ class NetworkPropagation(sfa.base.Algorithm):
         # The following members are assigned the instances in initialize()
         self._W = None
         self._b = None
+        self._pi=None
 
         self._exsol_avail = False  # The exact solution is available.
         self._M = None  # A matrix for getting the exact solution.
@@ -167,6 +168,13 @@ class NetworkPropagation(sfa.base.Algorithm):
     def b(self, vec):
         self._b = vec
 
+    @property
+    def pi(self):
+        return self._pi
+
+    @pi.setter
+    def pi(self,vec):
+        self._pi=vec
     @property
     def W(self):
         return self._W
@@ -213,6 +221,7 @@ class NetworkPropagation(sfa.base.Algorithm):
     def initialize_basal_activity(self):
         N = self.data.A.shape[0]  # Number of state variables
         self._b = np.zeros(N)
+        self._pi=[]
     # end of def
 
     def apply_inputs(self, inds, vals):
@@ -271,6 +280,7 @@ class NetworkPropagation(sfa.base.Algorithm):
         sim_result = np.zeros(df_exp.shape, dtype=np.float)
 
         b = self._b
+        pi=self._pi
 
         if self._params.use_rel_change:
             inds_ba = []  # Indices of nodes to be perturbed
@@ -331,15 +341,15 @@ class NetworkPropagation(sfa.base.Algorithm):
         """
     # end of def _prepare_iterative_solution
 
-    def compute(self, b):
+    def compute(self, b, pi):
         if self.params.exsol_forbidden is True \
                 or self._exsol_avail is False:
             alpha = self._params.alpha
             W = self.W
             lim_iter = self._params.lim_iter
-            x_ss, _ = self.propagate_iterative(W, b, b, a=alpha,
+            x_ss, _ = self.propagate_iterative(W, b, b,pi, a=alpha,
                                                lim_iter=lim_iter)
-            return x_ss  # x at steady-state (i.e., stationary state)
+            return x_ss, _ # x at steady-state (i.e., stationary state)
         else:
             return self.propagate_exact(b)
 
@@ -366,6 +376,7 @@ class NetworkPropagation(sfa.base.Algorithm):
                             W,
                             xi,
                             b,
+                            pi,
                             a=0.5,
                             lim_iter=1000,
                             tol=1e-5,

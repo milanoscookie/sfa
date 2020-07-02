@@ -155,7 +155,7 @@ class Algorithm(ContainerItem):
         pass
 
     @abc.abstractmethod
-    def compute(self, b):
+    def compute(self, b,pi):
         r"""Process the assigned data
             with the given basal activity, :math:`b`.
 
@@ -164,7 +164,8 @@ class Algorithm(ContainerItem):
         b : numpy.ndarray
             1D array of basal activity.
 
-
+        pi: list
+            list of fixed node perturbations
         Returns
         -------
         x : numpy.ndarray
@@ -229,7 +230,7 @@ class Data(ContainerItem):
         for i, row in enumerate(self._df_conds.iterrows()):
             row = row[1]
             list_name = []  # Target names
-            for target in self._df_conds.columns[row.to_numpy().nonzero()]:
+            for target in self._df_conds.columns[row.nonzero()]:
                 list_name.append(target)
             # end of for
             self._names_ptb.append(list_name)
